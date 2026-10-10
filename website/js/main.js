@@ -11,19 +11,71 @@ window.addEventListener('scroll', function() {
 // Mobile Menu Toggle
 const hamburger = document.querySelector('.hamburger');
 const navLinks = document.querySelector('.nav-links');
-const links = document.querySelectorAll('.nav-links li a');
-
+const links = document.querySelectorAll('.nav-links > li > a');
 hamburger.addEventListener('click', () => {
     navLinks.classList.toggle('active');
     hamburger.innerHTML = navLinks.classList.contains('active') ? '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
 });
 
 links.forEach(link => {
+    link.addEventListener('click', (e) => {
+        if (link.parentElement.classList.contains('has-dropdown') && window.innerWidth <= 992) {
+            e.preventDefault();
+            link.parentElement.classList.toggle('open');
+            return;
+        }
+        navLinks.classList.remove('active');
+        hamburger.innerHTML = '<i class="fas fa-bars"></i>';
+    });
+});
+
+document.querySelectorAll('.dropdown a').forEach(link => {
     link.addEventListener('click', () => {
         navLinks.classList.remove('active');
         hamburger.innerHTML = '<i class="fas fa-bars"></i>';
     });
 });
+
+// Hero slider
+(function() {
+    const slides = document.querySelectorAll('.hero-slide');
+    const dotsWrap = document.querySelector('.hero-dots');
+    const prevBtn = document.querySelector('.hero-arrow.prev');
+    const nextBtn = document.querySelector('.hero-arrow.next');
+    if (!slides.length) return;
+
+    let index = 0;
+    let timer;
+
+    slides.forEach((_, i) => {
+        const dot = document.createElement('button');
+        dot.type = 'button';
+        dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+        if (i === 0) dot.classList.add('active');
+        dot.addEventListener('click', () => goTo(i));
+        dotsWrap.appendChild(dot);
+    });
+
+    const dots = dotsWrap.querySelectorAll('button');
+
+    function goTo(i) {
+        slides[index].classList.remove('active');
+        dots[index].classList.remove('active');
+        index = (i + slides.length) % slides.length;
+        slides[index].classList.add('active');
+        dots[index].classList.add('active');
+        restart();
+    }
+
+    function restart() {
+        clearInterval(timer);
+        timer = setInterval(() => goTo(index + 1), 6000);
+    }
+
+    prevBtn.addEventListener('click', () => goTo(index - 1));
+    nextBtn.addEventListener('click', () => goTo(index + 1));
+    restart();
+})();
 
 // Active Link Highlight
 const sections = document.querySelectorAll('section');
@@ -73,6 +125,14 @@ filterBtns.forEach(btn => {
                 }, 300);
             }
         });
+    });
+});
+
+document.querySelectorAll('.dropdown a[data-filter]').forEach(link => {
+    link.addEventListener('click', () => {
+        const filterValue = link.getAttribute('data-filter');
+        const match = document.querySelector(`.filter-btn[data-filter="${filterValue}"]`);
+        if (match) match.click();
     });
 });
 
